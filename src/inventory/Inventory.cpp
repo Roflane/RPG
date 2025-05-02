@@ -3,9 +3,10 @@
 static Color UIColor = Fade(MAROON, 0.73f);
 static Color SelectedCellColor = Fade(BLUE, 0.73f);
 static float factorPos = 0.05f, factorSize = 0.1f;
-float lineThickness = 3.f;
+static float lineThickness = 3.f;
 
 static float midPos = 0, thinSepY = 0, rightSepX = 0, cellOffset = 0;
+static float newWeaponW, newWeaponH;
 
 void Inventory::exitInventory(Vector2 &mousePos, UIStates &uiState) {
 	if (IsClickedOnRect(mousePos, _inventoryBackButton)) {
@@ -91,7 +92,6 @@ void Inventory::drawRightInventory(Entity &entity) {
 	drawSlots();
 	drawStatArea(entity);
 }
-
 void Inventory::drawGearTab() {
 	cellOffset = (thinSepY * 0.3f);
 	Vector2 gearCellStart = {
@@ -166,6 +166,52 @@ void Inventory::drawCurrentGear(std::vector<Gear> currentGear) {
 		DrawTexture(GearAssets::GearList[currentGear[4]], _lrGearSlotRects[1].x, _lrGearSlotRects[1].y, WHITE);
 	}
 }
+void Inventory::drawGear(std::bitset<15> availableGear) {
+	if (_currentTab == GEAR) {
+		for (uint8 i = 0; i < availableGear.size(); ++i) {
+			GearAssets::GearList[i].width = _gearCells->width;
+			GearAssets::GearList[i].height = _gearCells->height;
+			if (availableGear[i]) {
+				DrawTexture(GearAssets::GearList[i], _gearCells[i].x, _gearCells[i].y, WHITE);
+			}
+			else {
+				DrawTexture(GearAssets::GearList[i], _gearCells[i].x, _gearCells[i].y, BLACK);
+			}
+		}
+	}
+}
+bool Inventory::selectGear(std::bitset<15> availableGear, std::vector<Gear> &currentGear, Vector2 &mousePos) {
+	if (_currentTab == GEAR) {
+		for (uint8 i = 0; i < 15; ++i) {
+			if (IsClickedOnRect(mousePos, _gearCells[i])) {
+				if (availableGear[i]) {
+					if (i == T3HEAD || i == T2HEAD || i == T1HEAD) {
+						currentGear[HEAD] = static_cast<Gear>(i);
+						return true;
+					}
+					else if (i == T3ARMOR || i == T2ARMOR || i == T1ARMOR) {
+						currentGear[ARMOR] = static_cast<Gear>(i);
+						return true;
+					}
+					else if (i == T3BOOTS || i == T2BOOTS || i == T1BOOTS) {
+						currentGear[BOOTS] = static_cast<Gear>(i);
+						return true;
+					}
+					else if (i == T3NECKLACE || i == T2NECKLACE || i == T1NECKLACE) {
+						currentGear[NECKLACE] = static_cast<Gear>(i);
+						return true;
+					}
+					else if (i == T3RING || i == T2RING || i == T1RING) {
+						currentGear[RING] = static_cast<Gear>(i);
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
 
 void Inventory::drawSlots() {
 	const uint8 verticalSlots = 3;
@@ -246,7 +292,6 @@ void Inventory::drawStatArea(Entity &entity) {
 		statTextPos.y + ((i + 3) * (textOffset / 4)), statFontSize, BLACK);
 }
 
-float newWeaponW, newWeaponH;
 void Inventory::drawWeapons(Weapon &current, Vector2 &mousePos) {
 	newWeaponW = ScreenSettings::w * 0.05f;
 	newWeaponH = ScreenSettings::h * 0.1f;
